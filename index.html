@@ -1,0 +1,1306 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Joash — QA Automation Engineer</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,400&family=JetBrains+Mono:wght@400;500;700&family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<style>
+/* === THEME TOKENS === */
+:root[data-theme="dark"] {
+  --bg: #0c0b09;
+  --bg-elev: #14120e;
+  --bg-elev-2: #1c1a14;
+  --fg: #f0ead6;
+  --fg-dim: #c9c1ad;
+  --muted: #8a8275;
+  --accent: #f59e0b;
+  --accent-rgb: 245, 158, 11;
+  --accent-2: #06b6d4;
+  --accent-2-rgb: 6, 182, 212;
+  --border: rgba(240, 234, 214, 0.08);
+  --border-strong: rgba(240, 234, 214, 0.18);
+  --card: #15130e;
+  --code-bg: #060503;
+  --code-fg: #f0ead6;
+  --glow: rgba(245, 158, 11, 0.15);
+}
+:root[data-theme="light"] {
+  --bg: #f3ecdc;
+  --bg-elev: #faf3e1;
+  --bg-elev-2: #fffaee;
+  --fg: #1a1610;
+  --fg-dim: #3d362b;
+  --muted: #6b6358;
+  --accent: #c2410c;
+  --accent-rgb: 194, 65, 12;
+  --accent-2: #0e7490;
+  --accent-2-rgb: 14, 116, 144;
+  --border: rgba(26, 22, 16, 0.12);
+  --border-strong: rgba(26, 22, 16, 0.24);
+  --card: #fffaee;
+  --code-bg: #1a1610;
+  --code-fg: #f3ecdc;
+  --glow: rgba(194, 65, 12, 0.12);
+}
+:root[data-theme="cyber"] {
+  --bg: #02060a;
+  --bg-elev: #050d10;
+  --bg-elev-2: #071318;
+  --fg: #4eff96;
+  --fg-dim: #8affb8;
+  --muted: #2a8a5e;
+  --accent: #ffea00;
+  --accent-rgb: 255, 234, 0;
+  --accent-2: #ff10f0;
+  --accent-2-rgb: 255, 16, 240;
+  --border: rgba(78, 255, 150, 0.18);
+  --border-strong: rgba(78, 255, 150, 0.4);
+  --card: #050d10;
+  --code-bg: #000;
+  --code-fg: #4eff96;
+  --glow: rgba(78, 255, 150, 0.2);
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Space Grotesk', sans-serif;
+  margin: 0;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* CRT scanlines for cyber theme */
+[data-theme="cyber"] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(78, 255, 150, 0.025) 2px, rgba(78, 255, 150, 0.025) 3px);
+  z-index: 200;
+  mix-blend-mode: overlay;
+}
+
+/* Theme transition animation */
+body.theme-anim,
+body.theme-anim *,
+body.theme-anim *::before,
+body.theme-anim *::after {
+  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              fill 0.6s cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 0.6s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.font-display { font-family: 'Fraunces', serif; }
+.font-mono { font-family: 'JetBrains Mono', monospace; }
+
+/* === PROGRESS BAR === */
+.progress-bar {
+  position: fixed;
+  top: 0; left: 0;
+  height: 3px;
+  width: 0%;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  z-index: 100;
+  box-shadow: 0 0 12px var(--accent), 0 0 4px var(--accent);
+}
+
+/* === BACKGROUND GRID === */
+.bg-grid {
+  background-image:
+    linear-gradient(var(--border) 1px, transparent 1px),
+    linear-gradient(90deg, var(--border) 1px, transparent 1px);
+  background-size: 56px 56px;
+  background-position: center center;
+}
+
+/* === FLOATING DOTS === */
+.float-dot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.25;
+  animation: drift 16s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes drift {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(60px, -40px) scale(1.1); }
+  66% { transform: translate(-30px, 50px) scale(0.95); }
+}
+
+/* === MOUSE GLOW === */
+.mouse-glow {
+  position: absolute;
+  width: 700px; height: 700px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(var(--accent-rgb), 0.12) 0%, transparent 60%);
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  filter: blur(30px);
+  z-index: 1;
+}
+
+/* === TYPEWRITER CURSOR === */
+.cursor::after {
+  content: '▌';
+  color: var(--accent);
+  animation: blink 1s steps(1) infinite;
+  margin-left: 4px;
+  font-weight: 400;
+}
+@keyframes blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0; } }
+
+.logo-cursor {
+  display: inline-block;
+  width: 0.5em;
+  height: 1em;
+  background: var(--accent);
+  margin-left: 3px;
+  animation: blink 1.1s steps(1) infinite;
+  vertical-align: text-bottom;
+}
+
+/* === LINKS === */
+.hover-link {
+  position: relative;
+  color: var(--fg-dim);
+  text-decoration: none;
+  transition: color 0.3s ease;
+}
+.hover-link:hover { color: var(--fg); }
+.hover-link::after {
+  content: '';
+  position: absolute;
+  left: 0; bottom: -5px;
+  width: 0; height: 1px;
+  background: var(--accent);
+  transition: width 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.hover-link:hover::after { width: 100%; }
+
+/* === THEME TOGGLE === */
+.theme-toggle {
+  display: inline-flex;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  padding: 3px;
+  gap: 2px;
+}
+.theme-btn {
+  width: 32px; height: 32px;
+  border-radius: 999px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  border: none;
+  background: transparent;
+  color: var(--muted);
+  transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  font-size: 12px;
+}
+.theme-btn.active {
+  background: var(--accent);
+  color: var(--bg);
+  box-shadow: 0 0 14px rgba(var(--accent-rgb), 0.5);
+}
+.theme-btn:hover:not(.active) { color: var(--fg); transform: scale(1.08); }
+
+/* === STAT PILL === */
+.stat-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 14px;
+  background: var(--bg-elev);
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  text-decoration: none;
+  color: var(--fg);
+  transition: all 0.3s ease;
+}
+.stat-pill:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+  transform: translateY(-1px);
+}
+.stat-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--accent-2);
+  box-shadow: 0 0 8px var(--accent-2);
+  animation: pulse 2s ease-in-out infinite;
+}
+@keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+
+.flash-up { animation: flashUp 0.7s ease; }
+@keyframes flashUp {
+  0% { transform: translateY(0); }
+  40% { transform: translateY(-6px); color: var(--accent-2) !important; text-shadow: 0 0 12px var(--accent-2); }
+  100% { transform: translateY(0); }
+}
+
+/* === TAG === */
+.tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--accent);
+  padding: 4px 9px;
+  border: 1px solid rgba(var(--accent-rgb), 0.5);
+  border-radius: 2px;
+  background: rgba(var(--accent-rgb), 0.08);
+  font-weight: 500;
+}
+
+/* === BUTTONS === */
+.btn-primary {
+  background: var(--accent);
+  color: var(--bg);
+  padding: 13px 22px;
+  border: none;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+  position: relative;
+  overflow: hidden;
+}
+.btn-primary::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
+  transform: translateX(-100%);
+  transition: transform 0.6s ease;
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 30px -8px rgba(var(--accent-rgb), 0.6);
+}
+.btn-primary:hover::before { transform: translateX(100%); }
+
+.btn-secondary {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--border-strong);
+  padding: 13px 22px;
+  border-radius: 4px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  font-weight: 500;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  text-transform: uppercase;
+  transition: all 0.3s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.btn-secondary:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+  transform: translateY(-2px);
+}
+
+/* === ARTICLE CARDS === */
+.article-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 4px;
+  padding: 28px;
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.45s cubic-bezier(0.34, 1.56, 0.64, 1),
+              box-shadow 0.45s cubic-bezier(0.4, 0, 0.2, 1),
+              border-color 0.4s ease;
+}
+.article-card::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.article-card::after {
+  content: '';
+  position: absolute;
+  bottom: 0; right: 0;
+  width: 80px; height: 80px;
+  background: radial-gradient(circle at bottom right, var(--glow), transparent 70%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
+}
+.article-card:hover {
+  transform: translateY(-8px);
+  border-color: var(--border-strong);
+  box-shadow: 0 24px 48px -20px rgba(0, 0, 0, 0.45);
+}
+[data-theme="light"] .article-card:hover {
+  box-shadow: 0 24px 48px -20px rgba(26, 22, 16, 0.2);
+}
+.article-card:hover::before { transform: scaleX(1); }
+.article-card:hover::after { opacity: 1; }
+.article-card .arrow {
+  display: inline-block;
+  transform: translateX(0);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.article-card:hover .arrow { transform: translateX(8px); }
+.article-card .card-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 56px;
+  color: var(--accent);
+  opacity: 0.18;
+  line-height: 0.9;
+  letter-spacing: -0.04em;
+  transition: opacity 0.4s ease;
+}
+.article-card:hover .card-num { opacity: 0.45; }
+.article-card h3 { transition: color 0.3s ease; }
+.article-card:hover h3 { color: var(--accent); }
+
+/* === CODE WINDOW === */
+.code-window {
+  background: var(--code-bg);
+  border: 1px solid var(--border-strong);
+  border-radius: 8px;
+  overflow: hidden;
+  font-family: 'JetBrains Mono', monospace;
+  position: relative;
+  box-shadow: 0 30px 60px -30px rgba(0, 0, 0, 0.5);
+}
+.code-header {
+  background: rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid var(--border);
+  padding: 11px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+[data-theme="light"] .code-header { background: rgba(255, 255, 255, 0.04); }
+[data-theme="cyber"] .code-header { background: rgba(78, 255, 150, 0.04); }
+
+.copy-btn {
+  background: transparent;
+  border: 1px solid var(--border-strong);
+  color: var(--muted);
+  padding: 5px 11px;
+  font-size: 11px;
+  font-family: 'JetBrains Mono', monospace;
+  border-radius: 3px;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-weight: 500;
+}
+.copy-btn:hover {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+.copy-btn.copied {
+  color: var(--bg) !important;
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.copy-flash {
+  position: absolute;
+  inset: 0;
+  background: var(--accent);
+  opacity: 0;
+  pointer-events: none;
+}
+.copy-btn.copied .copy-flash { animation: flash 0.7s ease; }
+@keyframes flash {
+  0% { opacity: 0.5; }
+  100% { opacity: 0; }
+}
+
+/* === SYNTAX HIGHLIGHTING === */
+.tk-key { color: #ff7b72; }
+.tk-str { color: #a5d6ff; }
+.tk-fn { color: #d2a8ff; }
+.tk-com { color: #6e7681; font-style: italic; }
+.tk-num { color: #79c0ff; }
+.tk-op { color: #ffa657; }
+.tk-var { color: var(--code-fg); }
+
+[data-theme="cyber"] .tk-key { color: #ff10f0; }
+[data-theme="cyber"] .tk-str { color: #ffea00; }
+[data-theme="cyber"] .tk-fn { color: #8affb8; }
+[data-theme="cyber"] .tk-com { color: #2a8a5e; }
+[data-theme="cyber"] .tk-num { color: #ffea00; }
+[data-theme="cyber"] .tk-op { color: #ffea00; }
+
+[data-theme="light"] .tk-key { color: #c2410c; }
+[data-theme="light"] .tk-str { color: #0e7490; }
+[data-theme="light"] .tk-fn { color: #7c2d12; }
+[data-theme="light"] .tk-com { color: #6b6358; }
+[data-theme="light"] .tk-num { color: #0e7490; }
+[data-theme="light"] .tk-op { color: #c2410c; }
+
+/* === ARCHIVE LIST === */
+.archive-item {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 22px 0;
+  border-bottom: 1px solid var(--border);
+  text-decoration: none;
+  color: inherit;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  position: relative;
+}
+.archive-item::before {
+  content: '';
+  position: absolute;
+  left: -16px; top: 50%;
+  width: 8px; height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  transform: translateY(-50%) scale(0);
+  transition: transform 0.3s ease;
+}
+.archive-item:hover {
+  padding-left: 16px;
+  border-bottom-color: var(--accent);
+}
+.archive-item:hover::before { transform: translateY(-50%) scale(1); }
+.archive-item:hover .archive-title { color: var(--accent); }
+.archive-title { transition: color 0.3s ease; }
+
+/* === MARQUEE === */
+.marquee-wrap {
+  overflow: hidden;
+  white-space: nowrap;
+}
+.marquee {
+  display: inline-flex;
+  animation: scroll 40s linear infinite;
+  gap: 60px;
+  padding-right: 60px;
+}
+@keyframes scroll {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+/* === SCROLLBAR === */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 5px;
+  border: 2px solid var(--bg);
+}
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+::selection { background: var(--accent); color: var(--bg); }
+
+/* === REVEAL === */
+.reveal {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: opacity 0.9s cubic-bezier(0.4, 0, 0.2, 1), transform 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* === INPUT === */
+.input-field {
+  background: var(--bg);
+  border: 1px solid var(--border-strong);
+  color: var(--fg);
+  padding: 13px 16px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 13px;
+  border-radius: 4px;
+  outline: none;
+  transition: all 0.3s ease;
+  width: 100%;
+}
+.input-field:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--glow);
+}
+.input-field::placeholder { color: var(--muted); }
+
+/* === RESPONSIVE === */
+@media (max-width: 768px) {
+  .article-card { padding: 22px; }
+  .card-num { font-size: 42px !important; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+</style>
+</head>
+<body>
+
+<!-- Reading Progress Bar -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- Navigation -->
+<header class="fixed top-0 left-0 right-0 z-50" style="backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); background: rgba(var(--accent-rgb), 0.02); border-bottom: 1px solid var(--border);">
+  <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+    <a href="#hero" class="font-mono font-bold text-lg flex items-center" style="color: var(--fg); text-decoration: none;">
+      <span style="color: var(--accent);">/</span>joash<span style="color: var(--muted);">/</span>qa<span class="logo-cursor"></span>
+    </a>
+    
+    <div class="hidden md:flex items-center gap-9 font-mono text-sm">
+      <a href="#about" class="hover-link">about</a>
+      <a href="#expertise" class="hover-link">expertise</a>
+      <a href="#work" class="hover-link">work</a>
+      <a href="#experience" class="hover-link">experience</a>
+    </div>
+    
+    <div class="flex items-center gap-3">
+      <a href="https://github.com/joashdavid" target="_blank" rel="noopener" class="stat-pill hidden sm:inline-flex" id="ghPill" title="Automation framework of choice">
+        <span class="stat-dot"></span>
+        <i class="fas fa-star text-xs" style="color: var(--accent);"></i>
+        <span id="ghStars" data-raw="0">—</span>
+        <span style="color: var(--muted);">·</span>
+        <i class="fas fa-code-branch text-xs" style="color: var(--accent-2);"></i>
+        <span id="ghForks" data-raw="0">—</span>
+      </a>
+      
+      <div class="theme-toggle" role="group" aria-label="Theme selector">
+        <button class="theme-btn active" data-theme="dark" title="Dark" aria-label="Dark theme"><i class="fas fa-moon"></i></button>
+        <button class="theme-btn" data-theme="light" title="Light" aria-label="Light theme"><i class="fas fa-sun"></i></button>
+        <button class="theme-btn" data-theme="cyber" title="Cyber" aria-label="Cyber theme"><i class="fas fa-terminal"></i></button>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<!-- Hero -->
+<section class="relative min-h-screen flex items-center overflow-hidden bg-grid pt-24 pb-20" id="hero">
+  <div class="float-dot" style="width: 500px; height: 500px; top: 5%; left: -150px; background: var(--accent);"></div>
+  <div class="float-dot" style="width: 600px; height: 600px; bottom: -200px; right: -200px; background: var(--accent-2); animation-delay: -5s;"></div>
+  <div class="mouse-glow" id="mouseGlow"></div>
+  
+  <div class="relative max-w-7xl mx-auto px-6 w-full" style="z-index: 2;">
+    <div class="max-w-5xl">
+      <!-- Issue meta -->
+      <div class="flex items-center gap-3 mb-8 font-mono text-xs flex-wrap" style="color: var(--muted);">
+        <span class="tag">QA Engineer</span>
+        <span>·</span>
+        <span>Automation / AI / Systems</span>
+        <span>·</span>
+        <span class="flex items-center gap-2">
+          <span class="stat-dot"></span> available for work
+        </span>
+      </div>
+      
+      <!-- Typewriter greeting -->
+      <h1 class="font-mono font-bold mb-8" style="font-size: clamp(2.5rem, 7.5vw, 6.5rem); line-height: 1.02; letter-spacing: -0.045em;">
+        <span style="color: var(--muted);">$</span> <span id="typewriter" class="cursor"></span>
+      </h1>
+      
+      <!-- Subtitle -->
+      <p class="font-display text-2xl md:text-3xl mb-5" style="font-style: italic; font-weight: 400; color: var(--fg); line-height: 1.3;">
+        Hi, I'm Joash — I build reliable automation systems, modern applications and intelligent testing workflows.
+      </p>
+      
+      <p class="text-base md:text-lg mb-12 max-w-2xl" style="color: var(--muted); line-height: 1.6;">
+        I'm a QA Automation Engineer focused on building reliable testing systems and modern applications. I combine automation engineering, development and AI-assisted workflows to create software that is reliable, scalable and easier to maintain.
+      </p>
+      
+      <!-- CTAs -->
+      <div class="flex flex-wrap gap-4 mb-20">
+        <a href="#work" class="btn-primary">
+          view selected work
+          <i class="fas fa-arrow-right text-xs"></i>
+        </a>
+        <a href="#experience" class="btn-secondary">
+          <i class="fas fa-history text-xs"></i>
+          experience
+        </a>
+      </div>
+      
+      <!-- Stats grid -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-8 max-w-3xl">
+        <div>
+          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">4+</div>
+          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">Years QA Exp.</div>
+        </div>
+        <div>
+          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">∞</div>
+          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">Automation Focus</div>
+        </div>
+        <div>
+          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">AI</div>
+          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">Testing Exploration</div>
+        </div>
+        <div>
+          <div class="font-mono font-bold text-3xl md:text-4xl" style="color: var(--accent);">2</div>
+          <div class="font-mono text-xs uppercase tracking-widest mt-2" style="color: var(--muted);">Dev Environments</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="absolute bottom-6 left-1/2 -translate-x-1/2 font-mono text-xs flex flex-col items-center gap-3" style="color: var(--muted);">
+    <span class="tracking-widest uppercase">scroll</span>
+    <div style="width: 1px; height: 30px; background: linear-gradient(to bottom, var(--accent), transparent);"></div>
+  </div>
+</section>
+
+<!-- Marquee -->
+<div class="py-5 border-y marquee-wrap" style="border-color: var(--border); background: var(--bg-elev);">
+  <div class="marquee font-mono text-sm uppercase tracking-widest" style="color: var(--muted);">
+    <span>Playwright</span><span>·</span><span>Selenium</span><span>·</span><span>Python</span><span>·</span><span>C#</span><span>·</span><span>Java</span><span>·</span><span>Pytest</span><span>·</span><span>Postman</span><span>·</span><span>Supabase</span><span>·</span><span>PostgreSQL</span><span>·</span><span>GitHub Actions</span><span>·</span><span>Jenkins</span><span>·</span><span>CI/CD</span><span>·</span>
+    <span>Playwright</span><span>·</span><span>Selenium</span><span>·</span><span>Python</span><span>·</span><span>C#</span><span>·</span><span>Java</span><span>·</span><span>Pytest</span><span>·</span><span>Postman</span><span>·</span><span>Supabase</span><span>·</span><span>PostgreSQL</span><span>·</span><span>GitHub Actions</span><span>·</span><span>Jenkins</span><span>·</span><span>CI/CD</span><span>·</span>
+  </div>
+</div>
+
+<!-- About Section -->
+<section class="py-24 md:py-32 px-6" id="about">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-12 gap-12 items-start">
+      <div class="lg:col-span-5 lg:sticky" style="top: 120px;">
+        <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// 01 / about</div>
+        <h2 class="font-display font-black text-5xl md:text-6xl mb-6" style="letter-spacing: -0.03em; line-height: 1.05;">
+          Engineering <span style="font-style: italic; font-weight: 400;">quality.</span><br>Building better <span style="font-style: italic; font-weight: 400;">software.</span>
+        </h2>
+        <div class="flex flex-wrap gap-2 mt-8">
+          <span class="tag">QA Automation</span>
+          <span class="tag">Dev</span>
+          <span class="tag">AI Workflows</span>
+        </div>
+      </div>
+      
+      <div class="lg:col-span-7">
+        <p class="text-lg mb-8" style="color: var(--fg-dim); line-height: 1.7;">
+          I'm a QA Automation Engineer focused on building reliable testing systems and modern applications. I enjoy combining automation engineering, development and AI-assisted workflows to create software that is reliable, scalable and easier to maintain.
+        </p>
+        <p class="text-base mb-12" style="color: var(--muted); line-height: 1.7;">
+          From writing self-healing automation frameworks in Python to building tournament management platforms with JavaScript and Supabase, I operate at the intersection of quality assurance and software engineering.
+        </p>
+
+        <div class="grid sm:grid-cols-3 gap-6 pt-8" style="border-top: 1px solid var(--border);">
+          <div>
+            <div class="font-mono font-bold text-3xl mb-2" style="color: var(--accent);">4+</div>
+            <div class="font-mono text-xs uppercase tracking-widest" style="color: var(--muted);">Years QA Experience</div>
+          </div>
+          <div>
+            <div class="font-mono font-bold text-3xl mb-2" style="color: var(--accent);">100%</div>
+            <div class="font-mono text-xs uppercase tracking-widest" style="color: var(--muted);">Automation Focused</div>
+          </div>
+          <div>
+            <div class="font-mono font-bold text-3xl mb-2" style="color: var(--accent);">∞</div>
+            <div class="font-mono text-xs uppercase tracking-widest" style="color: var(--muted);">AI + Testing Exploring</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Expertise Section -->
+<section class="py-24 md:py-32 px-6" id="expertise" style="background: var(--bg-elev);">
+  <div class="max-w-7xl mx-auto">
+    <div class="mb-16 reveal">
+      <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// 02 / expertise</div>
+      <h2 class="font-display font-black text-5xl md:text-7xl" style="letter-spacing: -0.035em; line-height: 1;">
+        Tools I <span style="font-style: italic; font-weight: 400;">work with.</span>
+      </h2>
+    </div>
+    
+    <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="article-card reveal">
+        <div class="card-num mb-6">01</div>
+        <h3 class="font-display font-bold text-2xl mb-6 leading-tight">Automation</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Playwright</span>
+          <span class="tag">Selenium</span>
+          <span class="tag">Pytest</span>
+          <span class="tag">SpecFlow</span>
+          <span class="tag">NUnit</span>
+        </div>
+      </div>
+
+      <div class="article-card reveal">
+        <div class="card-num mb-6">02</div>
+        <h3 class="font-display font-bold text-2xl mb-6 leading-tight">Programming</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Python</span>
+          <span class="tag">C#</span>
+          <span class="tag">Java</span>
+        </div>
+      </div>
+
+      <div class="article-card reveal">
+        <div class="card-num mb-6">03</div>
+        <h3 class="font-display font-bold text-2xl mb-6 leading-tight">API & Database</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Postman</span>
+          <span class="tag">RestSharp</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">SQL</span>
+        </div>
+      </div>
+
+      <div class="article-card reveal">
+        <div class="card-num mb-6">04</div>
+        <h3 class="font-display font-bold text-2xl mb-6 leading-tight">DevOps & Tools</h3>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Git</span>
+          <span class="tag">GitHub Actions</span>
+          <span class="tag">Jenkins</span>
+          <span class="tag">CI/CD</span>
+          <span class="tag">Jira</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Code Snippet Showcase -->
+<section class="py-24 md:py-32 px-6" id="snippets">
+  <div class="max-w-7xl mx-auto">
+    <div class="grid lg:grid-cols-12 gap-12 items-start">
+      <div class="lg:col-span-4 lg:sticky" style="top: 120px;">
+        <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// snippet showcase</div>
+        <h2 class="font-display font-black text-4xl md:text-5xl mb-6" style="letter-spacing: -0.03em; line-height: 1.05;">
+          <span style="font-style: italic; font-weight: 400;">test_login_flow</span>() — self-healing automation.
+        </h2>
+        <p class="text-base mb-8" style="color: var(--muted); line-height: 1.65;">
+          A glimpse of my AI-Powered Automation Framework. Using Playwright and Python, tests are dynamically generated and locators heal themselves when DOM elements shift.
+        </p>
+        <ul class="space-y-3 font-mono text-sm mb-8" style="color: var(--fg-dim);">
+          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> Page Object Model architecture</li>
+          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> AI-assisted locator healing</li>
+          <li class="flex items-center gap-3"><span style="color: var(--accent);">→</span> Allure reporting integrated</li>
+        </ul>
+        <div class="flex flex-wrap gap-2">
+          <span class="tag">Python</span>
+          <span class="tag">Playwright</span>
+          <span class="tag">Pytest</span>
+        </div>
+      </div>
+      
+      <div class="lg:col-span-8">
+        <div class="code-window">
+          <div class="code-header">
+            <div class="flex items-center gap-3">
+              <span class="flex gap-1.5">
+                <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
+                <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;display:inline-block;"></span>
+                <span style="width:11px;height:11px;border-radius:50%;background:#28c840;display:inline-block;"></span>
+              </span>
+              <span class="font-mono text-xs" style="color: var(--muted);">test_snooker_platform.py</span>
+            </div>
+            <button class="copy-btn" data-target="snippetCode">
+              <span class="copy-flash"></span>
+              <i class="fas fa-copy"></i>
+              <span class="copy-label">copy</span>
+            </button>
+          </div>
+          <pre class="p-6 md:p-7 text-xs md:text-sm overflow-x-auto" style="background: var(--code-bg); margin: 0; line-height: 1.7;"><code id="snippetCode"><span class="tk-key">import</span> <span class="tk-var">pytest</span>
+<span class="tk-key">from</span> <span class="tk-var">framework.pages.login_page</span> <span class="tk-key">import</span> <span class="tk-var">LoginPage</span>
+<span class="tk-key">from</span> <span class="tk-var">framework.ai.locator_healer</span> <span class="tk-key">import</span> <span class="tk-var">Healer</span>
+
+<span class="tk-com"># AI-assisted self-healing test case</span>
+<span class="tk-key">@pytest.mark.regression</span>
+<span class="tk-key">def</span> <span class="tk-fn">test_tournament_bracket_generation</span>(<span class="tk-var">page</span>, <span class="tk-var">db</span>):
+    <span class="tk-var">login</span> = <span class="tk-fn">LoginPage</span>(<span class="tk-var">page</span>)
+    <span class="tk-var">login</span>.<span class="tk-fn">navigate</span>()
+    <span class="tk-var">login</span>.<span class="tk-fn">authenticate</span>(<span class="tk-str">"admin@snooker.dev"</span>, <span class="tk-str">"secure_password"</span>)
+
+    <span class="tk-com"># If selector fails, AI Healer inspects DOM and updates the locator</span>
+    <span class="tk-key">with</span> <span class="tk-fn">Healer</span>(<span class="tk-var">page</span>, <span class="tk-str">"#generate-bracket-btn"</span>):
+        <span class="tk-var">page</span>.<span class="tk-fn">click</span>(<span class="tk-str">"#generate-bracket-btn"</span>)
+
+    <span class="tk-com"># Assert bracket is accurately generated in PostgreSQL</span>
+    <span class="tk-var">bracket_count</span> = <span class="tk-var">db</span>.<span class="tk-fn">query</span>(<span class="tk-str">"SELECT COUNT(*) FROM tournament_brackets"</span>)
+    <span class="tk-key">assert</span> <span class="tk-var">bracket_count</span> == <span class="tk-num">16</span></code></pre>
+        </div>
+        
+        <!-- Mini secondary snippet -->
+        <div class="code-window mt-6">
+          <div class="code-header">
+            <div class="flex items-center gap-3">
+              <span class="flex gap-1.5">
+                <span style="width:11px;height:11px;border-radius:50%;background:#ff5f57;display:inline-block;"></span>
+                <span style="width:11px;height:11px;border-radius:50%;background:#febc2e;display:inline-block;"></span>
+                <span style="width:11px;height:11px;border-radius:50%;background:#28c840;display:inline-block;"></span>
+              </span>
+              <span class="font-mono text-xs" style="color: var(--muted);">run_tests.sh</span>
+            </div>
+            <button class="copy-btn" data-target="usageCode">
+              <span class="copy-flash"></span>
+              <i class="fas fa-copy"></i>
+              <span class="copy-label">copy</span>
+            </button>
+          </div>
+          <pre class="p-6 md:p-7 text-xs md:text-sm overflow-x-auto" style="background: var(--code-bg); margin: 0; line-height: 1.7;"><code id="usageCode"><span class="tk-com"># Execute the regression suite with Allure reporting</span>
+<span class="tk-fn">pytest</span> <span class="tk-var">tests/</span> <span class="tk-op">--</span><span class="tk-var">html</span>=<span class="tk-var">report.html</span> <span class="tk-op">--</span><span class="tk-var">alluredir</span>=<span class="tk-var">allure-results</span>
+<span class="tk-fn">allure</span> <span class="tk-var">serve</span> <span class="tk-var">allure-results</span></code></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Selected Work -->
+<section class="py-24 md:py-32 px-6" id="work" style="background: var(--bg-elev);">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex items-end justify-between mb-16 flex-wrap gap-6 reveal">
+      <div>
+        <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// 03 / selected work</div>
+        <h2 class="font-display font-black text-5xl md:text-7xl" style="letter-spacing: -0.035em; line-height: 1;">
+          Things I've <span style="font-style: italic; font-weight: 400;">built.</span>
+        </h2>
+      </div>
+    </div>
+    
+    <div class="grid md:grid-cols-2 gap-6">
+      <!-- Project 1 -->
+      <article class="article-card reveal">
+        <div class="flex items-start justify-between mb-6">
+          <div class="card-num">01</div>
+          <span class="tag">Platform</span>
+        </div>
+        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+          Snooker Tournament Management Platform
+        </h3>
+        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+          A complete tournament management platform for Snooker and 8-Ball Pool with authentication, player management, team generation, tournament brackets, scoring and tournament history.
+        </p>
+        <div class="flex flex-wrap gap-2 mb-8">
+          <span class="tag">JavaScript</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">PostgreSQL</span>
+          <span class="tag">Vercel</span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+          <a href="#" class="flex items-center gap-2 hover-link">View Project <span class="arrow">→</span></a>
+          <a href="#" class="flex items-center gap-2 hover-link"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </article>
+
+      <!-- Project 2 -->
+      <article class="article-card reveal">
+        <div class="flex items-start justify-between mb-6">
+          <div class="card-num">02</div>
+          <span class="tag">QA / AI</span>
+        </div>
+        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+          AI-Powered Automation Framework
+        </h3>
+        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+          A scalable Python Playwright automation framework using Page Object Model architecture, database validation, reporting and AI-assisted test generation and healing.
+        </p>
+        <div class="flex flex-wrap gap-2 mb-8">
+          <span class="tag">Python</span>
+          <span class="tag">Playwright</span>
+          <span class="tag">Pytest</span>
+          <span class="tag">Supabase</span>
+          <span class="tag">MCP</span>
+          <span class="tag">AI Agents</span>
+          <span class="tag">Allure Reports</span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+          <a href="#" class="flex items-center gap-2 hover-link">View Project <span class="arrow">→</span></a>
+          <a href="#" class="flex items-center gap-2 hover-link"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </article>
+
+      <!-- Project 3 -->
+      <article class="article-card reveal">
+        <div class="flex items-start justify-between mb-6">
+          <div class="card-num">03</div>
+          <span class="tag">Automation</span>
+        </div>
+        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+          NGO Data Scraping & AI Validation
+        </h3>
+        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+          A Python-based web scraping automation system that collects registered NGO information across India, structures the extracted data, and stores it in MongoDB. The workflow integrates Gemini AI to interpret CAPTCHA images and convert them into text, enabling a more automated data collection process.
+        </p>
+        <div class="flex flex-wrap gap-2 mb-8">
+          <span class="tag">Python</span>
+          <span class="tag">Web Scraping</span>
+          <span class="tag">MongoDB</span>
+          <span class="tag">Gemini AI</span>
+          <span class="tag">Automation</span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+          <a href="#" class="flex items-center gap-2 hover-link">View Project <span class="arrow">→</span></a>
+          <a href="#" class="flex items-center gap-2 hover-link"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </article>
+
+      <!-- Project 4 -->
+      <article class="article-card reveal">
+        <div class="flex items-start justify-between mb-6">
+          <div class="card-num">04</div>
+          <span class="tag">Automation</span>
+        </div>
+        <h3 class="font-display font-bold text-2xl mb-4 leading-tight">
+          Automated Movie Release Tracker
+        </h3>
+        <p class="text-sm mb-8" style="color: var(--muted); line-height: 1.65;">
+          A Python web scraping automation project that extracts movie listings and release information from the web, filters the collected data, and automatically delivers daily movie updates through a Telegram bot.
+        </p>
+        <div class="flex flex-wrap gap-2 mb-8">
+          <span class="tag">Python</span>
+          <span class="tag">Web Scraping</span>
+          <span class="tag">Telegram Bot</span>
+          <span class="tag">Scheduled Jobs</span>
+          <span class="tag">Automation</span>
+        </div>
+        <div class="flex items-center gap-6 font-mono text-xs uppercase tracking-widest" style="color: var(--accent);">
+          <a href="#" class="flex items-center gap-2 hover-link">View Project <span class="arrow">→</span></a>
+          <a href="#" class="flex items-center gap-2 hover-link"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- Experience -->
+<section class="py-24 md:py-32 px-6" id="experience">
+  <div class="max-w-5xl mx-auto">
+    <div class="mb-16 reveal">
+      <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// 04 / experience</div>
+      <h2 class="font-display font-black text-5xl md:text-7xl" style="letter-spacing: -0.035em; line-height: 1;">
+        Where I've <span style="font-style: italic; font-weight: 400;">worked.</span>
+      </h2>
+    </div>
+    
+    <div class="reveal">
+      <a href="#" class="archive-item">
+        <div class="font-mono text-xs w-32 flex-shrink-0" style="color: var(--muted);">2025—Present</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">Senior Quality Engineer · Tavant</div>
+          <div class="text-sm" style="color: var(--muted);">Automation/Manual Testing · Mortgage Domain · Playwright / Selenium · API Testing · C# / Python</div>
+        </div>
+        <div class="tag hidden md:inline-block">Full-time</div>
+      </a>
+      
+      <a href="#" class="archive-item">
+        <div class="font-mono text-xs w-32 flex-shrink-0" style="color: var(--muted);">2021—2025</div>
+        <div class="flex-1 min-w-0">
+          <div class="font-display text-xl md:text-2xl archive-title mb-1" style="font-weight: 700;">Associate Software Engineer · Mphasis</div>
+          <div class="text-sm" style="color: var(--muted);">Automation/Manual Testing · Selenium · C# .Net · Performance Testing (Apache Jmeter) · API Testing · Database Testing · Banking Domain</div>
+        </div>
+        <div class="tag hidden md:inline-block">Full-time</div>
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- Contact / Footer -->
+<section class="py-24 md:py-32 px-6" id="contact" style="background: var(--bg-elev);">
+  <div class="max-w-4xl mx-auto">
+    <div class="text-center mb-12 reveal">
+      <div class="font-mono text-xs uppercase tracking-widest mb-4" style="color: var(--accent);">// let's connect</div>
+      <h2 class="font-display font-black text-5xl md:text-6xl mb-6" style="letter-spacing: -0.035em; line-height: 1;">
+        Let's build reliable <span style="font-style: italic; font-weight: 400;">software.</span>
+      </h2>
+      <p class="text-lg max-w-2xl mx-auto" style="color: var(--muted); line-height: 1.6;">
+        I'm currently open to QA Automation Engineering and Software Development opportunities. Drop a line, and let's talk about quality.
+      </p>
+    </div>
+    
+    <div class="flex justify-center reveal">
+      <a href="mailto:joashdavid7@gmail.com" class="btn-primary">
+        get in touch
+        <i class="fas fa-arrow-right text-xs"></i>
+      </a>
+    </div>
+  </div>
+</section>
+
+<footer class="py-12 px-6 border-t" style="border-color: var(--border);">
+  <div class="max-w-7xl mx-auto">
+    <div class="flex flex-col md:flex-row items-center justify-between gap-6 mb-8">
+      <div class="font-mono text-sm" style="color: var(--muted);">
+        © 2026 Joash · built with care, not frameworks
+      </div>
+      <div class="flex items-center gap-5">
+        <a href="https://github.com" target="_blank" rel="noopener" class="hover-link text-lg" aria-label="GitHub"><i class="fab fa-github"></i></a>
+        <a href="https://www.linkedin.com" target="_blank" rel="noopener" class="hover-link text-lg" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+        <a href="#" class="hover-link text-lg" aria-label="Resume"><i class="fas fa-file-lines"></i></a>
+        <a href="mailto:hi@devlog.example" class="hover-link text-lg" aria-label="Email"><i class="fas fa-envelope"></i></a>
+      </div>
+    </div>
+    <div class="text-center font-mono text-xs pt-8" style="border-top: 1px solid var(--border); color: var(--muted);">
+      <span style="color: var(--accent);">$</span> pytest tests/ --alluredir=/dev/stdout
+    </div>
+  </div>
+</footer>
+
+<script>
+// === TYPEWRITER ===
+const greetings = [
+  "hi, i'm joash.",
+  "i build automation systems.",
+  "i break things so you don't have to.",
+  "console.log('quality');",
+  "pytest --headed",
+];
+const typeEl = document.getElementById('typewriter');
+let gIdx = 0, cIdx = 0, deleting = false;
+
+function tick() {
+  const current = greetings[gIdx];
+  if (deleting) {
+    cIdx--;
+    typeEl.textContent = current.slice(0, cIdx);
+    if (cIdx === 0) {
+      deleting = false;
+      gIdx = (gIdx + 1) % greetings.length;
+      setTimeout(tick, 400);
+      return;
+    }
+    setTimeout(tick, 35);
+  } else {
+    cIdx++;
+    typeEl.textContent = current.slice(0, cIdx);
+    if (cIdx === current.length) {
+      deleting = true;
+      setTimeout(tick, 2200);
+      return;
+    }
+    setTimeout(tick, 75 + Math.random() * 50);
+  }
+}
+tick();
+
+// === READING PROGRESS BAR ===
+const progressBar = document.getElementById('progressBar');
+function updateProgress() {
+  const scrollTop = window.scrollY;
+  const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+  const progress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
+  progressBar.style.width = progress + '%';
+}
+window.addEventListener('scroll', updateProgress, { passive: true });
+updateProgress();
+
+// === THEME TOGGLE (3-state with smooth transition) ===
+const themeButtons = document.querySelectorAll('.theme-btn');
+const root = document.documentElement;
+
+function setTheme(theme, animate = true) {
+  if (animate) {
+    document.body.classList.add('theme-anim');
+    setTimeout(() => document.body.classList.remove('theme-anim'), 700);
+  }
+  root.setAttribute('data-theme', theme);
+  try { localStorage.setItem('devlog-theme', theme); } catch (e) {}
+  themeButtons.forEach(btn => {
+    btn.classList.toggle('active', btn.dataset.theme === theme);
+  });
+}
+
+themeButtons.forEach(btn => {
+  btn.addEventListener('click', () => setTheme(btn.dataset.theme));
+});
+
+// Initial theme
+let initialTheme = 'dark';
+try {
+  const saved = localStorage.getItem('devlog-theme');
+  if (saved && ['dark', 'light', 'cyber'].includes(saved)) initialTheme = saved;
+} catch (e) {}
+setTheme(initialTheme, false);
+
+// === COPY-FLASH CODE BUTTONS ===
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const targetId = btn.dataset.target;
+    const codeEl = document.getElementById(targetId);
+    if (!codeEl) return;
+    const text = codeEl.innerText;
+    
+    try {
+      await navigator.clipboard.writeText(text);
+    } catch (e) {
+      const ta = document.createElement('textarea');
+      ta.value = text;
+      ta.style.position = 'fixed';
+      ta.style.opacity = '0';
+      document.body.appendChild(ta);
+      ta.select();
+      try { document.execCommand('copy'); } catch (e2) {}
+      document.body.removeChild(ta);
+    }
+    
+    btn.classList.add('copied');
+    const label = btn.querySelector('.copy-label');
+    const icon = btn.querySelector('i');
+    const origLabel = label.textContent;
+    const origIcon = icon.className;
+    label.textContent = 'copied';
+    icon.className = 'fas fa-check';
+    
+    setTimeout(() => {
+      btn.classList.remove('copied');
+      label.textContent = origLabel;
+      icon.className = origIcon;
+    }, 1800);
+  });
+});
+
+// === GITHUB LIVE COUNTERS ===
+const starsEl = document.getElementById('ghStars');
+const forksEl = document.getElementById('ghForks');
+
+function formatNumber(n) {
+  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
+  return n.toString();
+}
+
+function animateCounter(el, target, duration = 1400) {
+  const start = parseInt(el.dataset.raw) || 0;
+  const startTime = performance.now();
+  function frame(now) {
+    const elapsed = now - startTime;
+    const t = Math.min(elapsed / duration, 1);
+    const eased = 1 - Math.pow(1 - t, 3);
+    const value = Math.floor(start + (target - start) * eased);
+    el.textContent = formatNumber(value);
+    el.dataset.raw = value;
+    if (t < 1) requestAnimationFrame(frame);
+    else {
+      el.dataset.raw = target;
+      el.textContent = formatNumber(target);
+    }
+  }
+  requestAnimationFrame(frame);
+}
+
+async function loadGitHubStats() {
+  const fallbackStars = 65200;
+  const fallbackForks = 3540;
+  
+  try {
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 4000);
+    const res = await fetch('https://api.github.com/repos/microsoft/playwright', {
+      signal: controller.signal,
+      headers: { 'Accept': 'application/vnd.github.v3+json' }
+    });
+    clearTimeout(timeout);
+    
+    if (!res.ok) throw new Error('Rate limited');
+    const data = await res.json();
+    animateCounter(starsEl, data.stargazers_count);
+    animateCounter(forksEl, data.forks_count);
+  } catch (e) {
+    animateCounter(starsEl, fallbackStars);
+    animateCounter(forksEl, fallbackForks);
+  }
+}
+loadGitHubStats();
+
+// Simulate live activity on the star counter
+setInterval(() => {
+  if (Math.random() < 0.35) {
+    const current = parseInt(starsEl.dataset.raw) || 0;
+    const next = current + 1;
+    starsEl.dataset.raw = next;
+    starsEl.textContent = formatNumber(next);
+    starsEl.classList.remove('flash-up');
+    void starsEl.offsetWidth; // restart animation
+    starsEl.classList.add('flash-up');
+  }
+}, 9000);
+
+// === MOUSE GLOW (hero only) ===
+const mouseGlow = document.getElementById('mouseGlow');
+const hero = document.getElementById('hero');
+hero.addEventListener('mousemove', (e) => {
+  const rect = hero.getBoundingClientRect();
+  mouseGlow.style.left = (e.clientX - rect.left) + 'px';
+  mouseGlow.style.top = (e.clientY - rect.top) + 'px';
+  mouseGlow.style.opacity = '1';
+});
+hero.addEventListener('mouseleave', () => {
+  mouseGlow.style.opacity = '0';
+});
+
+// === SCROLL REVEAL ===
+const revealObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      entry.target.classList.add('visible');
+      revealObserver.unobserve(entry.target);
+    }
+  });
+}, { threshold: 0.12, rootMargin: '0px 0px -80px 0px' });
+
+document.querySelectorAll('.reveal').forEach(el => revealObserver.observe(el));
+
+// === KEYBOARD SHORTCUT: T to cycle theme ===
+document.addEventListener('keydown', (e) => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 't' || e.key === 'T') {
+    const current = root.getAttribute('data-theme');
+    const order = ['dark', 'light', 'cyber'];
+    const next = order[(order.indexOf(current) + 1) % order.length];
+    setTheme(next);
+  }
+});
+
+// === BG GRID PARALLAX ===
+window.addEventListener('scroll', () => {
+  const scrolled = window.scrollY;
+  const heroGrid = hero;
+  if (heroGrid && scrolled < window.innerHeight) {
+    heroGrid.style.backgroundPosition = `center ${scrolled * 0.3}px`;
+  }
+}, { passive: true });
+</script>
+
+</body>
+</html>
